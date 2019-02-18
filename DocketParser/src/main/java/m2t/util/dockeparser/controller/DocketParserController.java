@@ -74,7 +74,6 @@ public class DocketParserController {
 
 	public DocketParserController(String fileName, String content) {
 		this.fileName = fileName;
-
 		this.fileContent = new ByteArrayInputStream(content.getBytes());
 		lines = new BufferedReader(new InputStreamReader(fileContent)).lines().collect(Collectors.toList());
 		jobMap = new HashMap<>();
