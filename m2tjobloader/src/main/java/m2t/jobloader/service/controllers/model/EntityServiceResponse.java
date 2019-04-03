@@ -7,12 +7,11 @@ import java.util.Map;
 
 public class EntityServiceResponse <T> extends BasicServiceResponse  {
 	
-	private String operationName;
-	private String entityType;
-	private String id;
-	private String reference;
-	private String JSONString;
-	private T entity;
+	protected String entityType;
+	protected String id;
+	protected String reference;
+	protected String JSONString;
+	protected T entity;
 	
 
 	
@@ -29,14 +28,6 @@ public class EntityServiceResponse <T> extends BasicServiceResponse  {
 		return getOperations().put(operation.getOperationName(), operation);
 	}
 	
-	public String getOperationName() {
-		
-		return operationName;
-	}
-
-	public void setOperationName(String operationName) {
-		this.operationName = operationName;
-	}
 
 
 

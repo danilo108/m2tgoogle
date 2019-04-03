@@ -3,6 +3,7 @@
 	<name>DocketParser</name>
 	<comment></comment>
 	<projects>
+		<project>JobLoaderServiceModel</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
