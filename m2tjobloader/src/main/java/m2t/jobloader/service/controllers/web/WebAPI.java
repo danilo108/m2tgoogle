@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.comparator.Comparators;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import m2t.jobloader.service.controllers.model.WebAPIResponse;
 import m2t.service.model.jobloader.ContainerDTO;
 
 @RestController("/webapi")
+@CrossOrigin(origins = "http://localhost:3000")
 public class WebAPI {
 
 	@Autowired
