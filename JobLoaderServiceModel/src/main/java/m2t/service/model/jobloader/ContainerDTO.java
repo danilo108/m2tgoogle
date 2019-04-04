@@ -19,6 +19,7 @@ public class ContainerDTO {
 	int totalNumberOfFrames;
 	int totalNumberOfPanels;
 	int totalNumberOfBlinds;
+	long containerId;
 	
 	
 	
@@ -109,6 +110,12 @@ public class ContainerDTO {
 	}
 	public void setTotalNumberOfBlinds(int totalNumberOfBlinds) {
 		this.totalNumberOfBlinds = totalNumberOfBlinds;
+	}
+	public long getContainerId() {
+		return containerId;
+	}
+	public void setContainerId(long containerId) {
+		this.containerId = containerId;
 	}
 
 	

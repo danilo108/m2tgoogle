@@ -6,10 +6,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.comparator.Comparators;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import m2t.jobloader.dao.model.Container;
@@ -28,12 +33,17 @@ public class WebAPI {
 	JobRepository jobRepository;
 
 	@RequestMapping(path = "webapi/containers", method = RequestMethod.GET)
-	WebAPIResponse<ContainerDTO> getContainers() {
+	
+	WebAPIResponse<ContainerDTO> getContainers(@RequestParam(name = "pageNumber", defaultValue = "0"	)int pageNumber, @RequestParam(name="pageSize", required = true)int pageSize ) {
 		WebAPIResponse<ContainerDTO> response = new WebAPIResponse<ContainerDTO>("getContainers");
-		List<Container> allDao = new ArrayList<>();
-		containerRepository.findAll().forEach(c -> allDao.add(c));
-		List<ContainerDTO> entities = allDao.stream().sorted(Comparator.comparing(Container::getId).reversed()).map(dao -> {
+		Pageable pageRequest = PageRequest.of(pageNumber, pageSize);
+		Page<Container> pageResponse = containerRepository.findAll(pageRequest);
+		response.setTotalPages(pageResponse.getTotalPages());
+		response.setPageSize(pageResponse.getSize());
+		response.setCurrentPage(pageResponse.getNumber());
+		List<ContainerDTO> entities = pageResponse.getContent().stream().sorted(Comparator.comparing(Container::getId).reversed()).map(dao -> {
 			ContainerDTO dto = new ContainerDTO();
+			dto.setContainerId(dao.getId());
 			String containerNumber = dao.getContainerNumber();
 			dto.setContainerNumber(containerNumber);
 			dto.setReportSheetId(dao.getReportSheetId());
