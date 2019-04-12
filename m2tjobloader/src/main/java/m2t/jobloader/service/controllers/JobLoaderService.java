@@ -227,7 +227,7 @@ public class JobLoaderService {
 		return credential;
 	}
 
-	@RequestMapping(path = "/containers/{containerNumber}", method = RequestMethod.GET)
+//	@RequestMapping(path = "/containers/{containerNumber}", method = RequestMethod.GET)
 	public GetContainerResponseDTO getContainer(@PathVariable(name = "containerNumber") String containerNumber) {
 		GetContainerResponseDTO response = new GetContainerResponseDTO();
 		Container container = containerRepository.findByContainerNumber(containerNumber);

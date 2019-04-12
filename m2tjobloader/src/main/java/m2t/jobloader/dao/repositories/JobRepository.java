@@ -13,14 +13,17 @@ public interface JobRepository extends CrudRepository<Job	, Long> {
 	List<Job> findByContainerOrderByTotalBoxesDesc(String container);
 	Job findByJobCode(String jobCode);
 	
+	List<Job> findByContainerAndDeliverToCodeIsNull(String container);
+	
+	
 	@Query(value = "select count(*) from job j where j.container like  %:containerNumber%", nativeQuery = true)
 	int countByContainerNumber(@Param("containerNumber") String containerNumber);
 	
-	@Query(value = "select count(distinct  delivery_to_code) from job where container like %:containerNumber%", nativeQuery = true)
-	int countConfirmedDockets(@Param("containerNumber") String containerNumber);
+	@Query(value = "select count(delivery_to_code) from job where container like %:containerNumber% and delivery_to_code is not null", nativeQuery = true)
+	int countConfirmedJobs(@Param("containerNumber") String containerNumber);
 	
-	@Query(value = "select count(distinct  original_client) from job where container like %:containerNumber%", nativeQuery = true)
-	int countOriginalDockets(@Param("containerNumber") String containerNumber);
+	@Query(value = "select count(  original_client) from job where container like %:containerNumber%", nativeQuery = true)
+	int countOriginalJobs(@Param("containerNumber") String containerNumber);
 	
 	@Query(value = "select sum(tot_boxes) from job where container like %:containerNumber%", nativeQuery = true)
 	int countTotalBoxes(@Param("containerNumber") String containerNumber);

@@ -51,13 +51,13 @@ public class WebSchedulerController {
 
 	@Autowired
 	SheetController sheetController;
-	
+
 	@Autowired
 	NotificationFactory notificationFactory;
-	
+
 	@Value("${m2t.controllers.generateReport.url.prefix")
 	String generateReportURL;
-	
+
 	@Value("${m2t.report.downloadReport.URL}")
 	private String downloadReportURL;
 
@@ -71,7 +71,8 @@ public class WebSchedulerController {
 	 */
 
 	@RequestMapping(path = "/scheduler/check")
-	public @ResponseBody ContainerSchedulerResponse checkWebSite(@RequestParam(name="lastContainer", required=true)String lastContainer) {
+	public @ResponseBody ContainerSchedulerResponse checkWebSite(
+			@RequestParam(name = "lastContainer", required = true) String lastContainer) {
 		ContainerSchedulerResponse response = new ContainerSchedulerResponse("check");
 		WebContainerPage page = null;
 		try {
@@ -87,9 +88,10 @@ public class WebSchedulerController {
 			response.addWarning(new ResponseErrorDetail("ERROR", "Could not extract the container page", e));
 			return response;
 		}
-		for(WebContainerRecord record: page.getRecords()){
-			if(record.getNumber().endsWith(lastContainer)) {
-				response.addWarning(new ResponseErrorDetail("INFO", "The system reached the last container in the parameter: " + lastContainer, record));
+		for (WebContainerRecord record : page.getRecords()) {
+			if (record.getNumber().endsWith(lastContainer)) {
+				response.addWarning(new ResponseErrorDetail("INFO",
+						"The system reached the last container in the parameter: " + lastContainer, record));
 				break;
 			}
 			Container container = containerRepository.findByOrOriginalFileName(record.getNumber());
@@ -108,47 +110,51 @@ public class WebSchedulerController {
 					PDFToTEXTConverter converter = new PDFToTEXTConverter();
 					String convertedPDF = "";
 					try {
-						convertedPDF = converter.convertToText(webSiteChecker.getResponseInputStrem(record.getFullDownloadPDFURL()));
+						convertedPDF = converter
+								.convertToText(webSiteChecker.getResponseInputStrem(record.getFullDownloadPDFURL()));
 					} catch (Exception e) {
 						e.printStackTrace();
-						if(!response.isError()) {
+						if (!response.isError()) {
 							response.setError(true);
-							String errorDescription = "Impossible to convert the pdf in text for container number: " + record.getNumber();
+							String errorDescription = "Impossible to convert the pdf in text for container number: "
+									+ record.getNumber();
 							response.setErrorDescription(errorDescription);
 							response.addWarning(new ResponseErrorDetail("Error", errorDescription, record, e));
 							continue;
 						}
 					}
-					response.addWarning(new ResponseErrorDetail("INFO", "Docket converted for containerNumber:" + record.getNumber(), convertedPDF));
-					DocketParserController parser = new DocketParserController(record.getNumber(),
-							convertedPDF);
+					response.addWarning(new ResponseErrorDetail("INFO",
+							"Docket converted for containerNumber:" + record.getNumber(), convertedPDF));
+					DocketParserController parser = new DocketParserController(record.getNumber(), convertedPDF);
 					containerDTO = parser.parseContainer();
 				} catch (Exception e) {
 					e.printStackTrace();
 					response.setError(true);
 					response.setErrorDescription("Error while downloading and parsing the pdf docket for the container "
 							+ record.getNumber());
-					response.addWarning(new ResponseErrorDetail("ERROR", "Erro while downloading and parsing the pdf docket for the container " + record.getNumber(), record, e));
+					response.addWarning(new ResponseErrorDetail("ERROR",
+							"Erro while downloading and parsing the pdf docket for the container " + record.getNumber(),
+							record, e));
 					continue;
 				}
-				
+
 				CreateOrReplaceContainerResponseDTO createContainerResponse;
 				try {
 					createContainerResponse = jobLoadService.createOrReplaceContainer(containerDTO);
-							
+
 //					response.addOperationResponse(createContainerResponse);
 //					response.getWarnings().addAll(createContainerResponse.getWarnings());
 				} catch (Exception e) {
 					e.printStackTrace();
-					if(!response.isError()) {
+					if (!response.isError()) {
 						response.setError(true);
-						String errorDescription = "Error while creating the container : " + containerDTO.getContainerNumber();
+						String errorDescription = "Error while creating the container : "
+								+ containerDTO.getContainerNumber();
 						response.setErrorDescription(errorDescription);
 						response.addWarning(new ResponseErrorDetail("error", errorDescription, containerDTO, e));
 					}
 				}
-			
-				
+
 				if (containerRepository.findByOrOriginalFileName(record.getNumber()) == null) {
 					response.setError(true);
 					response.setErrorDescription("error while creating the container " + record.getNumber());
@@ -158,7 +164,7 @@ public class WebSchedulerController {
 				try {
 					BasicServiceResponse createSheetResponse = sheetController
 							.createSheet(containerDTO.getContainerNumber());
-				response.addOperationResponse(createSheetResponse);
+					response.addOperationResponse(createSheetResponse);
 //					response.getWarnings().addAll(createSheetResponse.getWarnings());
 					if (createSheetResponse.isError() && !response.isError()) {
 						response.setError(true);
@@ -168,9 +174,10 @@ public class WebSchedulerController {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					if(!response.isError()) {
+					if (!response.isError()) {
 						response.setError(true);
-						String errorDescription = "Errro while creating the sheet for the container " + record.getNumber();
+						String errorDescription = "Errro while creating the sheet for the container "
+								+ record.getNumber();
 						response.setErrorDescription(errorDescription);
 						response.addWarning(new ResponseErrorDetail("error", errorDescription, record, e));
 					}
@@ -179,9 +186,11 @@ public class WebSchedulerController {
 				record.setContainer(c);
 
 				try {
-					M2TNotification deliveryManager = notificationFactory.createSheetCreatedForDeliveryManager(c.getContainerNumber(), c.getFullURL(), generateReportURL+c.getContainerNumber());
+					M2TNotification deliveryManager = notificationFactory.createSheetCreatedForDeliveryManager(
+							c.getContainerNumber(), c.getFullURL(), generateReportURL + c.getContainerNumber());
 					deliveryManager.send();
-					M2TNotification createSheetCreatedForInstallersManager = notificationFactory.createSheetCreatedForInstallersManager(c.getContainerNumber(), c.getFullURL());
+					M2TNotification createSheetCreatedForInstallersManager = notificationFactory
+							.createSheetCreatedForInstallersManager(c.getContainerNumber(), c.getFullURL());
 					createSheetCreatedForInstallersManager.send();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -191,13 +200,11 @@ public class WebSchedulerController {
 		return response;
 	}
 
-	
-
-	@RequestMapping(path = "/report/print/{containerNumber}")
-	public @ResponseBody PrintReportResponse printReport(@PathVariable("containerNumber")String containerNumber){
+//	@RequestMapping(path = "/report/print/{containerNumber}")
+	public PrintReportResponse printReport(String containerNumber, boolean sendNotifications) {
 		PrintReportResponse response = new PrintReportResponse("print report");
 		response.setContainerNumber(containerNumber);
-		
+
 		Container container;
 		try {
 			container = containerRepository.findByContainerNumber(containerNumber);
@@ -209,15 +216,16 @@ public class WebSchedulerController {
 			response.addWarning(new ResponseErrorDetail("ERROR", errorDescription, containerNumber, e));
 			return response;
 		}
-		
-		if(container == null) {
+
+		if (container == null) {
 			response.setError(true);
 			response.setErrorDescription("The container number : " + containerNumber + " does not exist");
 			return response;
 		}
-		
-		if(StringUtils.isBlank(container.getFullURL())) {
-			response.addWarning(new ResponseErrorDetail("WARNING", "There was a request to create a report without a spread sheet", container));
+
+		if (StringUtils.isBlank(container.getFullURL())) {
+			response.addWarning(new ResponseErrorDetail("WARNING",
+					"There was a request to create a report without a spread sheet", container));
 			BasicServiceResponse createSheetResponse;
 			try {
 				createSheetResponse = sheetController.createSheet(containerNumber);
@@ -230,9 +238,10 @@ public class WebSchedulerController {
 				return response;
 			}
 			response.addOperationResponse(createSheetResponse);
-			if(createSheetResponse.isError()) {
+			if (createSheetResponse.isError()) {
 				response.setError(true);
-				response.setErrorDescription("Beside asking to create a report without having a spreadsheet where to update the jobs. There was an error creating the spreadsheet.");
+				response.setErrorDescription(
+						"Beside asking to create a report without having a spreadsheet where to update the jobs. There was an error creating the spreadsheet.");
 				return response;
 			}
 		}
@@ -250,9 +259,10 @@ public class WebSchedulerController {
 			return response;
 		}
 		response.addOperationResponse(update);
-		if(update.isError()) {
+		if (update.isError()) {
 			response.setError(true);
-			response.setErrorDescription("Error while retrieving the data from the spreadsheet " + container.getSheetId());
+			response.setErrorDescription(
+					"Error while retrieving the data from the spreadsheet " + container.getSheetId());
 		}
 		try {
 			container = containerRepository.findByContainerNumber(containerNumber);
@@ -264,12 +274,11 @@ public class WebSchedulerController {
 			response.addWarning(new ResponseErrorDetail("ERROR", errorDescription, containerNumber, e));
 			return response;
 		}
-		long unclompletedJobs = container.getJobs().stream().filter(job ->{
+		long unclompletedJobs = container.getJobs().stream().filter(job -> {
 			return StringUtils.isBlank(job.getDeliverToCode());
 		}).count();
 		response.setUncompletedJobs(unclompletedJobs);
-		
-		
+
 		CreateReportResponse report;
 		try {
 			report = sheetController.createReport(containerNumber);
@@ -282,51 +291,60 @@ public class WebSchedulerController {
 			return response;
 		}
 		response.addOperationResponse(report);
-		if(report.isError()) {
+		if (report.isError()) {
 			response.setError(true);
 			response.setErrorDescription("There was an error creating the report");
 			return response;
 		}
-		M2TNotification notification = null;
-		try {
-			notification = notificationFactory.createFloorReportPrintNotification(response);
-			notification.send();
-		} catch (Exception e) {
-			e.printStackTrace();
-			response.setError(true);
-			response.setErrorDescription("BE AWARE!!!! The operation was SUCCESSFUL but you will not receive an email or sms this time. Use the following link to download the pdf, save this message and contact your customer support!!!  " + downloadReportURL + containerNumber);
-			if(notification == null) {
-				response.addWarning(new ResponseErrorDetail("ERROR", "Error sending the notification", "", e));
-			}else {
-				response.addWarning(new ResponseErrorDetail("ERROR", "Error sending the notification", notification, e));
+		container.setSheetId(report.getSheetId());
+		container.setReportFullURL(report.getSheetFullURL());
+		containerRepository.save(container);
+		if (sendNotifications) {
+			M2TNotification notification = null;
+			try {
+				notification = notificationFactory.createFloorReportPrintNotification(response);
+				notification.send();
+			} catch (Exception e) {
+				e.printStackTrace();
+				response.setError(true);
+				response.setErrorDescription(
+						"BE AWARE!!!! The operation was SUCCESSFUL but you will not receive an email or sms this time. Use the following link to download the pdf, save this message and contact your customer support!!!  "
+								+ downloadReportURL + containerNumber);
+				if (notification == null) {
+					response.addWarning(new ResponseErrorDetail("ERROR", "Error sending the notification", "", e));
+				} else {
+					response.addWarning(
+							new ResponseErrorDetail("ERROR", "Error sending the notification", notification, e));
+				}
 			}
 		}
 		return response;
 	}
-	
-	
+
 	@GetMapping("/report/download/{containerNumber}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable String containerNumber, HttpServletRequest request) throws Exception, GeneralSecurityException {
+	public ResponseEntity<Resource> downloadFile(@PathVariable String containerNumber, HttpServletRequest request)
+			throws Exception, GeneralSecurityException {
 		Container container = containerRepository.findByContainerNumber(containerNumber);
-		
-      
-        // Try to determine file's content type
-        String contentType = null;
-        contentType = "containerNumber";
+
+		// Try to determine file's content type
+		String contentType = null;
+		contentType = "application/pdf";
 
 //        // Fallback to the default content type if type could not be determined
 //        if(contentType == null) {
 //            contentType = "application/octet-stream";
 //        }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        sheetController.getWrapper().getDriveService().files().export(container.getReportSheetId(),"application/pdf").set("portrait", Boolean.TRUE).set("scale","4").set("printtitle", "true").executeAndDownloadTo(baos);
-        baos.flush();
-        baos.close();
-        ByteArrayResource resource = new ByteArrayResource(baos.toByteArray());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		sheetController.getWrapper().getDriveService().files().export(container.getReportSheetId(), "application/pdf")
+				.set("portrait", Boolean.TRUE).set("scale", "4").set("printtitle", "true").executeAndDownloadTo(baos);
+		baos.flush();
+		baos.close();
+		ByteArrayResource resource = new ByteArrayResource(baos.toByteArray());
 //
-         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Floor report - " + containerNumber + "\"").body(resource);
+ 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						"attachment; filename=\"Floor report - " + containerNumber + ".pdf\"")
+				.body(resource);
 //      ;
-    }
+	}
 }
