@@ -3,6 +3,7 @@ package m2t.jobloader;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -15,6 +16,8 @@ import org.springframework.web.filter.CorsFilter;
 @SpringBootApplication
 public class M2tjobloaderApplication {
 
+	@Value("${m2t.web.WEBGUI_CORS}")
+	private String webGuiCorsURL;
 	public static void main(String[] args) {
 		SpringApplication.run(M2tjobloaderApplication.class, args);
 	}
@@ -24,7 +27,7 @@ public class M2tjobloaderApplication {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        config.setAllowedOrigins(Arrays.asList(webGuiCorsURL));
         config.setAllowedMethods(Collections.singletonList("*"));
         config.setAllowedHeaders(Collections.singletonList("*"));
         source.registerCorsConfiguration("/**", config);

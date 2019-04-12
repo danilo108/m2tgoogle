@@ -39,7 +39,7 @@ import m2t.jobloader.service.controllers.model.WebAPIResponse;
 import m2t.service.model.jobloader.ContainerDTO;
 
 @RestController("/webapi")
-@CrossOrigin(origins = "${m2t.web.WEBGUI_URL}")
+@CrossOrigin(origins = "${m2t.web.WEBGUI_CORS}")
 public class WebAPI {
 
 	@Autowired
