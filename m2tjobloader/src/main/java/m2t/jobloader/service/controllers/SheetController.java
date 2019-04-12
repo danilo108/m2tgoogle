@@ -389,6 +389,7 @@ public class SheetController {
 		}
 		List<JobUpdate> updates = new ArrayList<>();
 		int ctr = 0;
+		
 		for (List<Object> row : values.getValues()) {
 			try {
 				JobUpdate job = new JobUpdate();
