@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +39,7 @@ import m2t.jobloader.service.controllers.model.WebAPIResponse;
 import m2t.service.model.jobloader.ContainerDTO;
 
 @RestController("/webapi")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${m2t.web.WEBGUI_URL}")
 public class WebAPI {
 
 	@Autowired
@@ -48,7 +50,14 @@ public class WebAPI {
 	SheetController sheetController;
 	@Autowired
 	WebSchedulerController webSchedulerController;
+	@Value("${m2t.web.WEBGUI_URL}")
+	private String webGUIURL;
 	
+	@RequestMapping(value = "/web", method = RequestMethod.GET)
+	public void method(HttpServletResponse httpServletResponse) {
+	    httpServletResponse.setHeader("Location", webGUIURL);
+	    httpServletResponse.setStatus(302);
+	}
 	@RequestMapping(path = "webapi/containers", method = RequestMethod.GET)
 	WebAPIResponse<ContainerDTO> getcontainers(@RequestParam(name = "pageNumber", defaultValue = "0"	)int pageNumber, @RequestParam(name="pageSize", required = true)int pageSize ) {
 		WebAPIResponse<ContainerDTO> response = new WebAPIResponse<ContainerDTO>("getcontainers");
