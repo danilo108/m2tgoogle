@@ -130,7 +130,7 @@
 			<artifactId>itextpdf</artifactId>
 			<version>5.5.13</version>
 		</dependency>
-
+<!-- 
 		<dependency>
 			<groupId>m2t.service.model.jobloader</groupId>
 			<artifactId>JobLoaderServiceModel</artifactId>
@@ -141,7 +141,12 @@
 			<artifactId>DocketParser</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
+	-->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.0</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
